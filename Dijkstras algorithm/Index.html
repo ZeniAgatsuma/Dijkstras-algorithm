@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Алгоритм Дейкстри</title>
+  <style>
+    #result {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+<h1>Алгоритм Дейкстри</h1>
+<form id="graphForm">
+  <label for="graphInput">Введіть граф у форматі 'A': {'B': 1, 'C': 4}, ...</label>
+  <input type="text" id="graphInput" required>
+  <button type="submit">Розрахувати</button>
+</form>
+<div id="result"></div>
+
+<script>
+  const predefinedGraph = {
+    'A': {'B': 1, 'C': 4},
+    'B': {'A': 1, 'C': 2, 'D': 5},
+    'C': {'A': 4, 'B': 2, 'D': 1},
+    'D': {'B': 5, 'C': 1}
+  };
+
+  function readGraphFromInput(input) {
+    try {
+      return eval(`(${input})`);
+    } catch (error) {
+      console.error('Invalid input. Please enter neighbors in the correct format.');
+      return null;
+    }
+  }
+  function dijkstra(graph, start) {
+    const distances = {};
+    const visited = new Set();
+    const queue = [];
+
+    for (const vertex in graph) {
+      distances[vertex] = Infinity;
+    }
+    distances[start] = 0;
+    queue.push({ vertex: start, distance: 0 });
+
+    while (queue.length > 0) {
+      queue.sort((a, b) => a.distance - b.distance);
+      const { vertex, distance } = queue.shift();
+
+      if (visited.has(vertex)) continue;
+      visited.add(vertex);
+
+      for (const neighbor in graph[vertex]) {
+        const totalDistance = distance + graph[vertex][neighbor];
+        if (totalDistance < distances[neighbor]) {
+          distances[neighbor] = totalDistance;
+          queue.push({ vertex: neighbor, distance: totalDistance });
+        }
+      }
+    }
+
+    return distances;
+  }
+  const startVertex = 'A';
+  const shortestDistances = dijkstra(predefinedGraph, startVertex);
+
+  const resultWindow = document.getElementById('result');
+  resultWindow.innerHTML = '<h2>Найкоротші відстані:</h2>';
+  for (const vertex in shortestDistances) {
+    resultWindow.innerHTML += `<p>${vertex}: ${shortestDistances[vertex]}</p>`;
+  }
+
+  document.getElementById('graphForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    const graphInput = document.getElementById('graphInput').value;
+    const userGraph = readGraphFromInput(graphInput);
+    const graph = userGraph || predefinedGraph;
+
+    const shortestDistances = dijkstra(graph, startVertex);
+
+    resultWindow.innerHTML = '<h2>Найкоротші відстані:</h2>';
+    for (const vertex in shortestDistances) {
+      resultWindow.innerHTML += `<p>${vertex}: ${shortestDistances[vertex]}</p>`;
+    }
+  });
+</script>
+</body>
+</html>
